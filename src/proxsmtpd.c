@@ -94,6 +94,7 @@ enum {
 #define CFG_DEBUGFILES      "DebugFiles"
 #define CFG_CMDTIMEOUT      "FilterTimeout"
 #define CFG_HEADER      	"Header"
+#define CFG_REJECTPFX       "RejectMessagePrefix"
 
 #define TYPE_PIPE           "pipe"
 #define TYPE_FILE           "file"
@@ -158,6 +159,7 @@ int main(int argc, char* argv[])
     g_pxstate.filter_type = FILTER_PIPE;
     g_pxstate.timeout.tv_sec = DEFAULT_TIMEOUT;
     g_pxstate.reject = DEFAULT_REJECT;
+    g_pxstate.rejectPrefix = REJECTED;
 
     sp_init("proxsmtpd");
 
@@ -330,6 +332,12 @@ int cb_parse_option(const char* name, const char* value)
     else if(strcasecmp(CFG_FILTERREJECT, name) == 0)
     {
         g_pxstate.reject = value;
+        return 1;
+    }
+
+    else if(strcasecmp(CFG_REJECTPFX, name) == 0)
+    {
+        g_pxstate.rejectPrefix = value;
         return 1;
     }
 
@@ -1018,7 +1026,7 @@ cleanup:
 static void final_reject_message(char* buf, int buflen)
 {
     if(buf[0] == 0)
-        strlcpy(buf, REJECTED, buflen);
+        strlcpy(buf, g_pxstate.rejectPrefix, buflen);
     else
         trim_end(buf);
 }
